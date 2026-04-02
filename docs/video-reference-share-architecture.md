@@ -168,7 +168,64 @@ sequenceDiagram
 - 外部動画プラットフォームは iframe 埋め込みのみ利用し、コンテンツ配信責務は持たない
 - セキュリティ上の要点は URL 許可制、コメントのエスケープ、認証なし編集導線の暫定運用である
 
-## 6. この図で表している前提
+## 6. DynamoDB item 例
+
+### 6.1 List item
+
+```json
+{
+  "list_id": "LIST#list_xxxxx",
+  "item_key": "META",
+  "title": "参考曲まとめ",
+  "description": "サビの抜け感を参考にしたい曲です",
+  "created_at": "2026-04-02T12:00:00Z",
+  "updated_at": "2026-04-02T12:00:00Z"
+}
+```
+
+### 6.2 Video item: YouTube
+
+```json
+{
+  "list_id": "LIST#list_xxxxx",
+  "item_key": "VIDEO#001#video_xxxxx",
+  "video_id": "video_xxxxx",
+  "platform": "youtube",
+  "video_url": "https://youtu.be/xxxxx",
+  "embed_url": "https://www.youtube.com/embed/xxxxx",
+  "comment": "イントロの雰囲気が理想",
+  "sort_order": 1,
+  "created_at": "2026-04-02T12:00:00Z",
+  "updated_at": "2026-04-02T12:00:00Z"
+}
+```
+
+### 6.3 Video item: ニコニコ動画
+
+```json
+{
+  "list_id": "LIST#list_xxxxx",
+  "item_key": "VIDEO#002#video_sm12345678",
+  "video_id": "sm12345678",
+  "platform": "niconico",
+  "video_url": "https://www.nicovideo.jp/watch/sm12345678",
+  "embed_url": "https://embed.nicovideo.jp/watch/sm12345678",
+  "comment": "間奏前の盛り上がり方を参考にしたい",
+  "sort_order": 2,
+  "created_at": "2026-04-02T12:00:00Z",
+  "updated_at": "2026-04-02T12:00:00Z"
+}
+```
+
+## 7. URL パーサ実装ルール
+
+- `youtube.com/watch?v=...` と `youtu.be/...` を `platform = youtube` として扱う
+- `nicovideo.jp/watch/...` を `platform = niconico` として扱う
+- 抽出した `video_id` から `embed_url` を組み立て、保存時に item へ含める
+- URL パターンに一致しない入力は API で 400 系エラーとして返す
+- MVP では YouTube Shorts、playlist、ニコニコ動画の watch 以外の URL は対象外とする
+
+## 8. この図で表している前提
 
 - 認証は未導入のため、MVP の編集権限は強くない
 - API は REST ベースだが、Next.js の Route Handlers / Server Actions のどちらでも成立する粒度で表現している
