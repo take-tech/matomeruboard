@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Python / CDK
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+*.egg-info/
+infra/.venv/
+infra/.cdk.staging/
+infra/cdk.out/
+
+# Node / Next.js
+app/node_modules/
+app/.next/
+package-lock.json
