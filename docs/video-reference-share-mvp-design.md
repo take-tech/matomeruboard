@@ -267,6 +267,29 @@ MVP では以下の 2 画面で構成する。
 - YouTube / ニコニコ動画の既知 URL パターンのみ許可
 - 解析できない URL は登録不可
 
+### 10.4 URL パーサ仕様
+
+| platform | 受け付ける URL 例 | 抽出対象 | embed_url 生成ルール |
+| --- | --- | --- | --- |
+| youtube | `https://www.youtube.com/watch?v=VIDEO_ID` | `v` クエリの値 | `https://www.youtube.com/embed/{video_id}` |
+| youtube | `https://youtu.be/VIDEO_ID` | パス末尾の値 | `https://www.youtube.com/embed/{video_id}` |
+| niconico | `https://www.nicovideo.jp/watch/sm12345678` | `/watch/` 以降の値 | `https://embed.nicovideo.jp/watch/{video_id}` |
+
+#### パーサの判定手順
+
+1. URL を正規化して scheme / host / path / query を分解する
+2. host が YouTube 系かニコニコ動画かを判定する
+3. URL パターンに応じて `video_id` を抽出する
+4. `platform` と `embed_url` を確定する
+5. どのパターンにも一致しない場合はエラーとする
+
+#### バリデーション補足
+
+- `video_id` が空文字になる URL は不正とする
+- YouTube は MVP では通常動画 URL のみ対象とし、`shorts` や `playlist` は対象外とする
+- ニコニコ動画は MVP では `watch` URL のみ対象とする
+- 受け取った URL 文字列は保存前に trim する
+
 ---
 
 ## 11. データ設計
@@ -367,6 +390,15 @@ MVP では REST 形式を前提とする。
 }
 ```
 
+#### request example: niconico
+
+```json
+{
+  "video_url": "https://www.nicovideo.jp/watch/sm12345678",
+  "comment": "歌い出し前の空気感を参考にしたい"
+}
+```
+
 #### response
 
 ```json
@@ -386,6 +418,36 @@ MVP では REST 形式を前提とする。
 ```json
 {
   "comment": "Aメロの質感も参考になる",
+  "sort_order": 2
+}
+```
+
+### 12.6 動画データ例
+
+#### YouTube
+
+```json
+{
+  "id": "video_xxxxx",
+  "platform": "youtube",
+  "video_url": "https://youtu.be/xxxxx",
+  "video_id": "xxxxx",
+  "embed_url": "https://www.youtube.com/embed/xxxxx",
+  "comment": "イントロの雰囲気が理想",
+  "sort_order": 1
+}
+```
+
+#### ニコニコ動画
+
+```json
+{
+  "id": "video_sm12345678",
+  "platform": "niconico",
+  "video_url": "https://www.nicovideo.jp/watch/sm12345678",
+  "video_id": "sm12345678",
+  "embed_url": "https://embed.nicovideo.jp/watch/sm12345678",
+  "comment": "ブレイク前の展開を参考にしたい",
   "sort_order": 2
 }
 ```
